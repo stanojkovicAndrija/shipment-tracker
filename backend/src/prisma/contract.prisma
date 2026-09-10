@@ -1,0 +1,51 @@
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  shipments Shipment[]
+}
+
+model Shipment {
+  id             Int              @id @default(autoincrement())
+  trackingNumber String           @unique
+  customerId     Int
+  destination    String
+  promisedAt     TimestamptzString
+  status         ShipmentStatus   @default(CREATED)
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.updatedAtString()
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  events   ShipmentEvent[]
+}
+
+model ShipmentEvent {
+  id         Int                @id @default(autoincrement())
+  shipmentId Int
+  eventType  ShipmentEventType
+  location   String?
+  occurredAt TimestamptzString
+  createdAt  TimestamptzString @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+}
+
+enum ShipmentStatus {
+  CREATED
+  PICKED_UP
+  DEPARTED
+  AT_HUB
+  OUT_FOR_DELIVERY
+  DELIVERED
+}
+
+enum ShipmentEventType {
+  PICKED_UP
+  DEPARTED
+  ARRIVED_AT_HUB
+  OUT_FOR_DELIVERY
+  DELIVERED
+}
