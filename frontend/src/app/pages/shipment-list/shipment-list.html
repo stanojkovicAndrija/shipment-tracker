@@ -1,0 +1,49 @@
+<h1>Shipments</h1>
+<label for="search">Search:</label>
+
+<input
+  id="search"
+  type="text"
+  placeholder="Tracking number or destination"
+  (input)="onSearch($event)"
+/>
+<div class="shipment-list">
+    <label for="status">Filter by status:</label>
+
+<select id="status" (change)="onStatusChange($event)">
+  <option value="">All</option>
+  <option value="CREATED">Created</option>
+  <option value="PICKED_UP">Picked Up</option>
+  <option value="DEPARTED">Departed</option>
+  <option value="AT_HUB">At Hub</option>
+  <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+  <option value="DELIVERED">Delivered</option>
+</select>
+<label for="late">Delivery:</label>
+
+<select id="late" (change)="onLateChange($event)">
+  <option value="">All</option>
+  <option value="true">Late</option>
+  <option value="false">On time</option>
+</select>
+  @for (shipment of shipments; track shipment.id) {
+    <div class="shipment-card">
+      <h2>{{ shipment.trackingNumber }}</h2>
+
+      <p>
+        <strong>Destination:</strong>
+        {{ shipment.destination }}
+      </p>
+
+      <p>
+        <strong>Status:</strong>
+        {{ shipment.status }}
+      </p>
+
+      <p>
+        <strong>Promised:</strong>
+        {{ shipment.promisedAt | date:'medium' }}
+      </p>
+    </div>
+  }
+</div>

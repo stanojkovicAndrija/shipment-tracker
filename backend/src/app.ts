@@ -140,16 +140,14 @@ app.get('/api/shipments', async (req, res) => {
         });
       }
 
-      const shipments = await db.orm.public.Shipment
-        .where({ status: result.data })
-        .all();
-
-      return res.json(shipments);
+      shipments = shipments.filter(
+        shipment => shipment.status === result.data
+      );
     }
 
     if (late === 'true') {
 
-      const lateShipments = shipments
+      shipments = shipments
         .filter(
           shipment =>
             shipment.status !== 'DELIVERED' &&
@@ -160,8 +158,6 @@ app.get('/api/shipments', async (req, res) => {
             new Date(a.promisedAt).getTime() -
             new Date(b.promisedAt).getTime()
         );
-
-      return res.json(lateShipments);
     }
     if (typeof search === 'string' && search.trim() !== '') {
       const searchTerm = search.trim().toLowerCase();
@@ -174,13 +170,12 @@ app.get('/api/shipments', async (req, res) => {
     }
     if (late === 'false') {
 
-      const onTimeShipments = shipments
+      shipments = shipments
         .filter(
           shipment =>
             shipment.status === 'DELIVERED' ||
             new Date(shipment.promisedAt) >= new Date()
         )
-      return res.json(onTimeShipments);
     }
 
     const total = shipments.length;
