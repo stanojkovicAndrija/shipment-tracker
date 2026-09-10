@@ -43,6 +43,14 @@ const statusTransitions = {
     nextStatus: 'DELIVERED'
   }
 } as const;
+const shipmentStatusSchema = z.enum([
+  'CREATED',
+  'PICKED_UP',
+  'DEPARTED',
+  'AT_HUB',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED'
+]);
 app.use(cors());
 app.use(express.json());
 
@@ -51,6 +59,19 @@ app.get('/api/health', (_req, res) => {
     status: 'ok',
     message: 'Shipment Tracker API is running'
   });
+});
+app.get('/api/customers', async (_req, res) => {
+  try {
+    const customers = await db.orm.public.Customer.all();
+
+    res.json(customers);
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: 'Failed to fetch customers'
+    });
+  }
 });
 app.post('/api/shipments', async (req, res) => {
   try {
@@ -92,23 +113,90 @@ app.post('/api/shipments', async (req, res) => {
     });
   }
 });
-app.get('/api/test-db', async (_req, res) => {
+app.get('/api/shipments', async (req, res) => {
   try {
-    const customers = await db.orm.public.Customer.all();
+    const status = req.query.status;
+    const late = req.query.late;
+    const search = req.query.search;
 
-    res.json(customers);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: 'Database connection failed'
+    const page = Number(req.query.page) || 1;
+    const pageSize = Number(req.query.pageSize) || 10;
+    const offset = (page - 1) * pageSize;
+
+    if (page < 1 || pageSize < 1 || pageSize > 100) {
+      return res.status(400).json({
+        message: 'Invalid pagination parameters'
+      });
+    }
+
+    let shipments = await db.orm.public.Shipment.all();
+
+    if (typeof status === 'string') {
+      const result = shipmentStatusSchema.safeParse(status);
+
+      if (!result.success) {
+        return res.status(400).json({
+          message: 'Invalid shipment status'
+        });
+      }
+
+      const shipments = await db.orm.public.Shipment
+        .where({ status: result.data })
+        .all();
+
+      return res.json(shipments);
+    }
+
+    if (late === 'true') {
+
+      const lateShipments = shipments
+        .filter(
+          shipment =>
+            shipment.status !== 'DELIVERED' &&
+            new Date(shipment.promisedAt) < new Date()
+        )
+        .sort(
+          (a, b) =>
+            new Date(a.promisedAt).getTime() -
+            new Date(b.promisedAt).getTime()
+        );
+
+      return res.json(lateShipments);
+    }
+    if (typeof search === 'string' && search.trim() !== '') {
+      const searchTerm = search.trim().toLowerCase();
+
+      shipments = shipments.filter(
+        shipment =>
+          shipment.trackingNumber.toLowerCase().includes(searchTerm) ||
+          shipment.destination.toLowerCase().includes(searchTerm)
+      );
+    }
+    if (late === 'false') {
+
+      const onTimeShipments = shipments
+        .filter(
+          shipment =>
+            shipment.status === 'DELIVERED' ||
+            new Date(shipment.promisedAt) >= new Date()
+        )
+      return res.json(onTimeShipments);
+    }
+
+    const total = shipments.length;
+
+    const paginatedShipments = shipments.slice(
+      offset,
+      offset + pageSize
+    );
+
+    return res.json({
+      data: paginatedShipments,
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize)
     });
-  }
-});
-app.get('/api/shipments', async (_req, res) => {
-  try {
-    const shipments = await db.orm.public.Shipment.all();
-
-    res.json(shipments);
   } catch (error) {
     console.error(error);
 
@@ -212,6 +300,39 @@ app.post('/api/shipments/:id/events', async (req, res) => {
 
     res.status(500).json({
       message: 'Failed to create shipment event'
+    });
+  }
+});
+app.get('/api/shipments/:id/events', async (req, res) => {
+  try {
+    const shipmentId = Number(req.params.id);
+
+    if (!Number.isInteger(shipmentId)) {
+      return res.status(400).json({
+        message: 'Invalid shipment id'
+      });
+    }
+
+    const shipment = await db.orm.public.Shipment
+      .where({ id: shipmentId })
+      .first();
+
+    if (!shipment) {
+      return res.status(404).json({
+        message: 'Shipment not found'
+      });
+    }
+
+    const events = await db.orm.public.ShipmentEvent
+      .where({ shipmentId })
+      .all();
+
+    return res.json(events);
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: 'Failed to fetch shipment events'
     });
   }
 });
