@@ -1,87 +1,171 @@
-@if (errorMessage) {
-  <p>{{ errorMessage }}</p>
-}
-@if (shipment) {
-  <h1>{{ shipment.trackingNumber }}</h1>
+<div class="details-page">
 
-  <p>
-    <strong>Customer:</strong>
-    {{ shipment.customer.name }}
-  </p>
+  <a routerLink="/" class="back-link">
+    ← Back to Shipments
+  </a>
 
-  <p>
-    <strong>Email:</strong>
-    {{ shipment.customer.email }}
-  </p>
-
-  <p>
-    <strong>Destination:</strong>
-    {{ shipment.destination }}
-  </p>
-
-  <p>
-    <strong>Status:</strong>
-    {{ shipment.status }}
-  </p>
-
-  <p>
-    <strong>Promised:</strong>
-    {{ shipment.promisedAt | date:'medium' }}
-  </p>
-
-  <h2>Shipment History</h2>
-
-  @for (event of shipment.events; track event.id) {
-    <div>
-      <strong>{{ event.eventType }}</strong>
-
-      <p>Location: {{ event.location }}</p>
-
-      <p>
-        {{ event.occurredAt | date:'medium' }}
-      </p>
+  @if (errorMessage) {
+    <div class="error-message">
+      {{ errorMessage }}
     </div>
   }
 
-  <h2>Add Transport Event</h2>
+  @if (shipment) {
 
-<div>
-  <label for="eventType">Event:</label>
+    <!-- Header -->
 
-  <select id="eventType" [(ngModel)]="eventType">
-    <option value="">Select event</option>
-    <option value="PICKED_UP">Picked Up</option>
-    <option value="DEPARTED">Departed</option>
-    <option value="ARRIVED_AT_HUB">Arrived at Hub</option>
-    <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
-    <option value="DELIVERED">Delivered</option>
-  </select>
+    <div class="shipment-header">
+      <div>
+        <span class="eyebrow">Shipment</span>
+        <h1>{{ shipment.trackingNumber }}</h1>
+      </div>
+
+<span
+  class="status-badge"
+  [class.status-created]="shipment.status === 'CREATED'"
+  [class.status-picked-up]="shipment.status === 'PICKED_UP'"
+  [class.status-departed]="shipment.status === 'DEPARTED'"
+  [class.status-at-hub]="shipment.status === 'AT_HUB'"
+  [class.status-out-for-delivery]="shipment.status === 'OUT_FOR_DELIVERY'"
+  [class.status-delivered]="shipment.status === 'DELIVERED'"
+>
+  {{ shipment.status }}
+</span>
+    </div>
+
+    <!-- Shipment information -->
+
+    <div class="info-grid">
+
+      <div class="info-card">
+        <span class="info-label">Customer</span>
+        <strong>{{ shipment.customer.name }}</strong>
+        <span>{{ shipment.customer.email }}</span>
+      </div>
+
+      <div class="info-card">
+        <span class="info-label">Destination</span>
+        <strong>{{ shipment.destination }}</strong>
+      </div>
+
+      <div class="info-card">
+        <span class="info-label">Promised Delivery</span>
+        <strong>{{ shipment.promisedAt | date:'medium' }}</strong>
+      </div>
+
+      <div class="info-card">
+        <span class="info-label">Current Status</span>
+        <strong>{{ shipment.status }}</strong>
+      </div>
+
+    </div>
+
+    <!-- Shipment history -->
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Shipment History</h2>
+        <span>{{ shipment.events.length }} events</span>
+      </div>
+
+      @if (shipment.events.length === 0) {
+        <div class="empty-state">
+          No transport events recorded yet.
+        </div>
+      }
+
+      <div class="timeline">
+
+        @for (event of shipment.events; track event.id) {
+
+          <div class="timeline-item">
+
+            <div class="timeline-dot"></div>
+
+            <div class="timeline-content">
+
+              <div class="timeline-top">
+                <strong>{{ event.eventType }}</strong>
+                <span>
+                  {{ event.occurredAt | date:'medium' }}
+                </span>
+              </div>
+
+              <p>
+                {{ event.location }}
+              </p>
+
+            </div>
+
+          </div>
+
+        }
+
+      </div>
+    </section>
+
+    <!-- Add event -->
+
+    <section class="event-card">
+
+      <div class="section-header">
+        <div>
+          <h2>Add Transport Event</h2>
+          <p>Record the next movement of this shipment.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="eventType">Event</label>
+
+          <select
+            id="eventType"
+            [(ngModel)]="eventType"
+          >
+            <option value="">Select event</option>
+            <option value="PICKED_UP">Picked Up</option>
+            <option value="DEPARTED">Departed</option>
+            <option value="ARRIVED_AT_HUB">Arrived at Hub</option>
+            <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+            <option value="DELIVERED">Delivered</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location</label>
+
+          <input
+            id="location"
+            type="text"
+            placeholder="e.g. Belgrade"
+            [(ngModel)]="location"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="occurredAt">Occurred at</label>
+
+          <input
+            id="occurredAt"
+            type="datetime-local"
+            [(ngModel)]="occurredAt"
+          />
+        </div>
+
+      </div>
+
+      <button
+        class="add-event-button"
+        type="button"
+        (click)="addEvent()"
+      >
+        Add Event
+      </button>
+
+    </section>
+
+  }
+
 </div>
-
-<div>
-  <label for="location">Location:</label>
-
-  <input
-    id="location"
-    type="text"
-    [(ngModel)]="location"
-  />
-</div>
-
-<div>
-  <label for="occurredAt">Occurred at:</label>
-
-  <input
-    id="occurredAt"
-    type="datetime-local"
-    [(ngModel)]="occurredAt"
-  />
-</div>
-
-<button (click)="addEvent()">
-  Add Event
-</button>
-<a routerLink="/">
-  <button type="button">Back to Shipments</button>
-</a>
-}

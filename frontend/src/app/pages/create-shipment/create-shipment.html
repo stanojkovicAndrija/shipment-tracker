@@ -1,52 +1,83 @@
-<h1>Create Shipment</h1>
+<div class="create-page">
 
-<div>
-  <label for="trackingNumber">Tracking Number:</label>
+  <a routerLink="/" class="back-link">
+    ← Back to Shipments
+  </a>
 
-  <input
-    id="trackingNumber"
-    type="text"
-    [(ngModel)]="trackingNumber"
-  />
+  <div class="page-header">
+    <span class="eyebrow">Shipments</span>
+    <h1>Create Shipment</h1>
+    <p>Create a new shipment for an existing customer.</p>
+  </div>
+
+  <div class="form-card">
+
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label for="trackingNumber">Tracking Number</label>
+        <input
+          id="trackingNumber"
+          type="text"
+          placeholder="e.g. TRK-10007"
+          [(ngModel)]="trackingNumber"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="customer">Customer</label>
+
+        <select
+          id="customer"
+          [(ngModel)]="customerId"
+        >
+          <option value="">Select customer</option>
+
+          @for (customer of customers; track customer.id) {
+            <option [value]="customer.id">
+              {{ customer.name }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="destination">Destination</label>
+        <input
+          id="destination"
+          type="text"
+          placeholder="e.g. Berlin"
+          [(ngModel)]="destination"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="promisedAt">Promised Delivery</label>
+        <input
+          id="promisedAt"
+          type="datetime-local"
+          [(ngModel)]="promisedAt"
+        />
+      </div>
+
+    </div>
+
+    <div class="form-actions">
+      <a routerLink="/">
+        <button type="button" class="cancel-button">
+          Cancel
+        </button>
+      </a>
+
+      <button
+        type="button"
+        class="create-button"
+        (click)="createShipment()"
+      >
+        Create Shipment
+      </button>
+    </div>
+
+  </div>
+
 </div>
-
-<div>
-  <label for="customer">Customer:</label>
-
-  <select
-    id="customer"
-    [(ngModel)]="customerId"
-  >
-    <option value="">Select customer</option>
-
-    @for (customer of customers; track customer.id) {
-      <option [value]="customer.id">
-        {{ customer.name }}
-      </option>
-    }
-  </select>
-</div>
-
-<div>
-  <label for="destination">Destination:</label>
-
-  <input
-    id="destination"
-    type="text"
-    [(ngModel)]="destination"
-  />
-</div>
-
-<div>
-  <label for="promisedAt">Promised At:</label>
-
-  <input
-    id="promisedAt"
-    type="datetime-local"
-    [(ngModel)]="promisedAt"
-  />
-</div>
-
-<button (click)="createShipment()">
-  Create Shipment
-</button>

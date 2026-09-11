@@ -4,10 +4,10 @@ import {
   Customer,
   ShipmentService
 } from '../../shipment.service';
-
+import { RouterLink } from "@angular/router";
 @Component({
   selector: 'app-create-shipment',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './create-shipment.html',
   styleUrl: './create-shipment.css'
 })
