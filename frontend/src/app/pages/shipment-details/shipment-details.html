@@ -1,0 +1,87 @@
+@if (errorMessage) {
+  <p>{{ errorMessage }}</p>
+}
+@if (shipment) {
+  <h1>{{ shipment.trackingNumber }}</h1>
+
+  <p>
+    <strong>Customer:</strong>
+    {{ shipment.customer.name }}
+  </p>
+
+  <p>
+    <strong>Email:</strong>
+    {{ shipment.customer.email }}
+  </p>
+
+  <p>
+    <strong>Destination:</strong>
+    {{ shipment.destination }}
+  </p>
+
+  <p>
+    <strong>Status:</strong>
+    {{ shipment.status }}
+  </p>
+
+  <p>
+    <strong>Promised:</strong>
+    {{ shipment.promisedAt | date:'medium' }}
+  </p>
+
+  <h2>Shipment History</h2>
+
+  @for (event of shipment.events; track event.id) {
+    <div>
+      <strong>{{ event.eventType }}</strong>
+
+      <p>Location: {{ event.location }}</p>
+
+      <p>
+        {{ event.occurredAt | date:'medium' }}
+      </p>
+    </div>
+  }
+
+  <h2>Add Transport Event</h2>
+
+<div>
+  <label for="eventType">Event:</label>
+
+  <select id="eventType" [(ngModel)]="eventType">
+    <option value="">Select event</option>
+    <option value="PICKED_UP">Picked Up</option>
+    <option value="DEPARTED">Departed</option>
+    <option value="ARRIVED_AT_HUB">Arrived at Hub</option>
+    <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+    <option value="DELIVERED">Delivered</option>
+  </select>
+</div>
+
+<div>
+  <label for="location">Location:</label>
+
+  <input
+    id="location"
+    type="text"
+    [(ngModel)]="location"
+  />
+</div>
+
+<div>
+  <label for="occurredAt">Occurred at:</label>
+
+  <input
+    id="occurredAt"
+    type="datetime-local"
+    [(ngModel)]="occurredAt"
+  />
+</div>
+
+<button (click)="addEvent()">
+  Add Event
+</button>
+<a routerLink="/">
+  <button type="button">Back to Shipments</button>
+</a>
+}

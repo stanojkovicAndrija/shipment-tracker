@@ -1,4 +1,30 @@
 <h1>Shipments</h1>
+@if (stats) {
+  <div class="stats">
+    <div class="stat-card">
+      <strong>Total</strong>
+      <span>{{ stats.total }}</span>
+    </div>
+
+    <div class="stat-card">
+      <strong>In Transit</strong>
+      <span>{{ stats.inTransit }}</span>
+    </div>
+
+    <div class="stat-card">
+      <strong>Delivered</strong>
+      <span>{{ stats.delivered }}</span>
+    </div>
+
+    <div class="stat-card">
+      <strong>Late</strong>
+      <span>{{ stats.late }}</span>
+    </div>
+  </div>
+}
+<a routerLink="/shipments/create">
+  <button type="button">Create Shipment</button>
+</a>
 <label for="search">Search:</label>
 
 <input
@@ -27,7 +53,7 @@
   <option value="false">On time</option>
 </select>
   @for (shipment of shipments; track shipment.id) {
-    <div class="shipment-card">
+    <div class="shipment-card" [routerLink]="['/shipments', shipment.id]">
       <h2>{{ shipment.trackingNumber }}</h2>
 
       <p>
@@ -46,4 +72,23 @@
       </p>
     </div>
   }
+  <div class="pagination">
+  <button
+    (click)="previousPage()"
+    [disabled]="currentPage === 1"
+  >
+    Previous
+  </button>
+
+  <span>
+    Page {{ currentPage }} of {{ totalPages || 1 }}
+  </span>
+
+  <button
+    (click)="nextPage()"
+    [disabled]="currentPage === totalPages"
+  >
+    Next
+  </button>
+</div>
 </div>
